@@ -317,8 +317,8 @@ if __name__ == "__main__":
     # Compute orders
     orders = calculate_order_of_convergence(errors, hs)
 
-    # Print summary
-    print("\n--- 1D Brusselator PDE with 21-Stage ESRK (3rd-order) ---")
+    # Print summary some nice metrics for the user to impect error order condtions 
+    print("\n--- 2D Brusselator PDE with 21-Stage ESRK (3rd-order) ---")
     print("Step sizes (hs)   =", hs)
     print("Errors           =", errors)
     print("Orders of conv.  =", orders)
