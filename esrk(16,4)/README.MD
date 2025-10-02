@@ -34,22 +34,8 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 
 ## 📈 Stability Function
 
-The stability function is defined as:
-
-\[
-R(z) = 1 + z\, b^\top (I - zA)^{-1}\mathbf{1},
-\]
-
-where \(\mathbf{1}\) is the all-ones vector.  
-Because \(A\) is strictly lower-triangular, the solve is a simple forward substitution.
-
-In `coeffs.json`, we also provide the **degree-16 polynomial form**:
-
-\[
-R(z) = \sum_{k=0}^{16} c_k z^k,
-\]
-
-with coefficients given in both ascending (`[c0, c1, ..., c16]`) and descending order.
+### Stability boundary in the complex plane (|R(z)| = 1)
+![ESRK(16,4): Stability boundary](img/ESRK16_stability_region.png)
 
 ---
 
