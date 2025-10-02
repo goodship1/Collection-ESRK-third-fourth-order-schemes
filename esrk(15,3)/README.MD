@@ -28,7 +28,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 | Stages | 15 |
 | Type | Explicit RK (lower-triangular \(A\)) |
 | Stability polynomial degree | 15 |
-| Real-axis stability radius ) | **≈ 72,** |
+| Real-axis stability radius ) | **≈ 71.77823812058196,** |
 
 ---
 
@@ -61,12 +61,6 @@ def R_from_Ab(z, A, b):
         y[i] = 1 + z * np.dot(A[i,:i], y[:i])
     return 1 + z * np.dot(b, y)
 
-# Evaluate stability function from JSON polynomial
-with open("coeffs.json") as f:
-    coeffs = json.load(f)["stability"]["stability_poly"]["coeffs_ascending"]
 
-def R_from_poly(z, coeffs):
-    val = 0.0 + 0.0j
-    for c in reversed(coeffs):
-        val = val*z + c
-    return val
+
+
