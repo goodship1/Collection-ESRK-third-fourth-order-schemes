@@ -1,4 +1,4 @@
-# ESRK(15,3) — Extended-Stability Runge–Kutta Scheme
+# ESRK(21,3) — Extended-Stability Runge–Kutta Scheme
 
 **Order:** 3  
 **Stages:** 21 
