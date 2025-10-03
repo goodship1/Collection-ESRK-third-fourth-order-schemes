@@ -25,9 +25,9 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 | Name | ESRK(15,4) |
 | Family | Extended-Stability Runge–Kutta (ESRK) |
 | Order | 3 |
-| Stages | 15 |
+| Stages | 21 |
 | Type | Explicit RK (lower-triangular \(A\)) |
-| Stability polynomial degree | 15 |
+| Stability polynomial degree | 21 |
 | Real-axis stability radius ) | **≈ 71.77823812058196,** |
 
 ---
@@ -35,7 +35,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 ## 📈 Stability Function
 
 ### Stability boundary in the complex plane (|R(z)| = 1)
-![ESRK(15,4): Stability boundary](third_15(5).png)
+![ESRK(21,3): Stability boundary](third_15(5).png)
 
 ---
 
