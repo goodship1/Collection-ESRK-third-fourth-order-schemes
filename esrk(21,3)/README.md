@@ -22,7 +22,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 
 | Property | Value |
 |----------|-------|
-| Name | ESRK(15,4) |
+| Name | ESRK(21,3) |
 | Family | Extended-Stability Runge–Kutta (ESRK) |
 | Order | 3 |
 | Stages | 21 |
