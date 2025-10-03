@@ -28,7 +28,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 | Stages | 21 |
 | Type | Explicit RK (lower-triangular \(A\)) |
 | Stability polynomial degree | 21 |
-| Real-axis stability radius ) | **≈ 71.77823812058196,** |
+| Real-axis stability radius ) | **≈ 141.49,** |
 
 ---
 
