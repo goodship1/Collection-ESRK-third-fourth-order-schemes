@@ -35,7 +35,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 ## 📈 Stability Function
 
 ### Stability boundary in the complex plane (|R(z)| = 1)
-![ESRK(21,3): Stability boundary](third_15(5).png)
+![ESRK(21,3): Stability boundary](esrk21_3_stability_region.png)
 
 ---
 
