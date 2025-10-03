@@ -10,10 +10,10 @@
 
 ## 📂 Contents
 
-This folder provides the coefficients and stability data for the **ESRK(16,4)** scheme in machine-readable formats:
+This folder provides the coefficients and stability data for the **ESRK(15,3)** scheme in machine-readable formats:
 
-- `A.csv` — Butcher tableau \(A\) (16×16, strictly lower-triangular)  
-- `b.csv` — Weights vector \(b\) (length 16)  
+- `A.csv` — Butcher tableau \(A\) (15×15, strictly lower-triangular)  
+- `b.csv` — Weights vector \(b\) (length 15)  
 - `coeffs.json` — Metadata, stability radius, and stability polynomial coefficients  
 
 ---
@@ -35,7 +35,7 @@ This folder provides the coefficients and stability data for the **ESRK(16,4)** 
 ## 📈 Stability Function
 
 ### Stability boundary in the complex plane (|R(z)| = 1)
-![ESRK(15,4): Stability boundary](third_15(5).png)
+![ESRK(15,3): Stability boundary](third_15(5).png)
 
 ---
 
