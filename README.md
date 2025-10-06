@@ -3,7 +3,7 @@ A curated set of third- and fourth-order Extended-Stability Runge–Kutta (ESRK)
 
 Scope. This repo focuses on practical, implementation-ready schemes: tabulated coefficients, stability diagnostics, and small utilities to verify order conditions and plot stability polynomials.
 
-# Third order schemes
+# Third Order Schemes
 
 # ESRK(15,3) — Extended-Stability Runge–Kutta Scheme
 
@@ -57,5 +57,36 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 | Type | Explicit RK (lower-triangular \(A\)) |
 | Stability polynomial degree | 21 |
 | Real-axis stability radius ) | **≈ 141.49,** |
+
+---
+
+# Fourth Order Schemes 
+
+
+# ESRK(16,4) — Extended-Stability Runge–Kutta Scheme
+
+**Order:** 4  
+**Stages:** 16  
+**Type:** Explicit RK (strictly lower-triangular A)  
+**Family:** ESRK — Extended-Stability Runge–Kutta  
+**Design goal:** Maximize the real-axis stability interval while retaining 4th-order accuracy.
+
+**Scheme:** In the esrk(16,4) file
+
+
+
+
+
+## 🔑 Scheme Summary
+
+| Property | Value |
+|----------|-------|
+| Name | ESRK(16,4) |
+| Family | Extended-Stability Runge–Kutta (ESRK) |
+| Order | 4 |
+| Stages | 16 |
+| Type | Explicit RK (lower-triangular \(A\)) |
+| Stability polynomial degree | 16 |
+| Real-axis stability radius ) | **≈ 58.656618727743464,** |
 
 ---
