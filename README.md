@@ -70,7 +70,6 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 **Type:** Explicit RK (strictly lower-triangular A)  
 **Family:** ESRK — Extended-Stability Runge–Kutta  
 **Design goal:** Maximize the real-axis stability interval while retaining 4th-order accuracy.
-
 **Scheme:** In the esrk(16,4) file
 
 
