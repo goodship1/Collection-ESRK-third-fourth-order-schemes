@@ -1,6 +1,5 @@
 # Collection of extended stability Runge-Kutta schemes 
 A curated set of third- and fourth-order Extended-Stability Runge–Kutta (ESRK) methods with large real-axis stability regions—ready to use in ODE/PDE solvers and Neural ODEs.
-
 Scope. This repo focuses on practical, implementation-ready schemes: tabulated coefficients, stability diagnostics, and small utilities to verify order conditions and plot stability polynomials.
 
 # Third Order Schemes
