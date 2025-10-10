@@ -88,3 +88,8 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 | Real-axis stability radius ) | **≈ 58.656618727743464,** |
 
 ---
+
+
+ESRK(16,4) — Extended-Stability Runge–Kutta Scheme + embeddings
+(WORK IN PROG)
+
