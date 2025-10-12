@@ -12,3 +12,7 @@
 | Real-axis stability radius ) | **≈ 58.656618727743464,** |
 |Embedded ratio \(R_3/R_4\)** | **≈ 0.24** |
 |dev from main | 4%
+
+
+
+![ESRK(16,4) + embeddings: Stability boundary](spectral_band_map.png)
