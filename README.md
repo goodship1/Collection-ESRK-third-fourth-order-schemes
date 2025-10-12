@@ -19,7 +19,7 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 
 | Property | Value |
 |----------|-------|
-| Name | ESRK(15,4) |
+| Name | ESRK(15,3) |
 | Family | Extended-Stability Runge–Kutta (ESRK) |
 | Order | 3 |
 | Stages | 15 |
@@ -90,6 +90,18 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 ---
 
 
-ESRK(16,4) — Extended-Stability Runge–Kutta Scheme + embeddings
-(WORK IN PROG)
+# ESRK(16,4) — Extended-Stability Runge–Kutta Scheme + embeddings
+## 🔑 Scheme Summary
+
+| Property | Value |
+|----------|-------|
+| Name | ESRK(16,4) |
+| Family | Extended-Stability Runge–Kutta (ESRK) |
+| Order | 4 |
+| Stages | 16 |
+| Type | Explicit RK (lower-triangular \(A\)) |
+| Stability polynomial degree | 16 |
+| Real-axis stability radius ) | **≈ 58.656618727743464,** |
+|Embedded ratio \(R_3/R_4\)** | **≈ 0.24** |
+|dev from main | 4%
 
