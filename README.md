@@ -102,6 +102,6 @@ Scope. This repo focuses on practical, implementation-ready schemes: tabulated c
 | Type | Explicit RK (lower-triangular \(A\)) |
 | Stability polynomial degree | 16 |
 | Real-axis stability radius ) | **≈ 58.656618727743464,** |
-|Embedded ratio \(R_3/R_4\)** | **≈ 0.24** |
+|Embedded ratio \(R_3/R_4\)** | **≈ 0.33** |
 |dev from main | 4%
 
