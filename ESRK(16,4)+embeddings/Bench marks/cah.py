@@ -1,221 +1,147 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env julia
+# ================================================================
+# FitzHugh–Nagumo PDE — TRUE ROCK4 Diagnostics (Julia ODE)
+# Matching ESRK(16,4/3) Python script
+# ================================================================
 
-import numpy as np
-import matplotlib.pyplot as plt
-from numpy.linalg import norm
-import csv, time
+using DifferentialEquations
+using LinearAlgebra
+using Statistics
+using Printf
+using Plots
 
-# ============================================================
-# Load ESRK(16,4/3) coefficients
-# ============================================================
-A  = np.loadtxt("A.csv", delimiter=",")
-b4 = np.loadtxt("b_main.csv", delimiter=",")
-b3 = np.loadtxt("b_embedded_dev04.csv", delimiter=",")
-S  = len(b4)                # number of stages = 16
+println("\nFitzHugh–Nagumo PDE — TRUE ROCK4 Diagnostics (Julia ODE)\n")
 
-# ============================================================
-# PDE: FitzHugh–Nagumo (1D Reaction–Diffusion)
-# ============================================================
-def lap(z, dx):
-    out = np.zeros_like(z)
-    out[1:-1] = (z[2:] - 2*z[1:-1] + z[:-2]) / dx**2
-    out[0]    = (z[1] - 2*z[0] + z[-1]) / dx**2
-    out[-1]   = (z[0] - 2*z[-1] + z[-2]) / dx**2
+# ------------------------------------------------------------
+# 1D Laplacian (periodic BCs)
+# ------------------------------------------------------------
+function lap(u, dx)
+    N = length(u)
+    out = similar(u)
+    out[1]     = (u[2] - 2u[1] + u[N]) / dx^2
+    out[N]     = (u[1] - 2u[N] + u[N-1]) / dx^2
+    @inbounds for i in 2:(N-1)
+        out[i] = (u[i+1]-2u[i]+u[i-1]) / dx^2
+    end
     return out
+end
 
-def fhn_rhs(t, y, Du, eps, gamma, a, dx):
-    N = len(y)//2
-    u, v = y[:N], y[N:]
-    fu = Du * lap(u, dx) + u*(u-a)*(1-u) - v
-    fv = eps * (u - gamma*v)
-    return np.concatenate([fu, fv])
+# ------------------------------------------------------------
+# FitzHugh–Nagumo RHS on concatenated y=[u; v]
+# ------------------------------------------------------------
+function fhn!(du, y, p, t)
+    N, dx, Du, eps, γ, a = p
+    u = @view y[1:N]
+    v = @view y[N+1:2N]
 
-# ============================================================
-# ESRK Integrators
-# ============================================================
-def esrk_step(f, y, t, h, A, b, args):
-    k = np.zeros((S, len(y)))
-    for i in range(S):
-        yi = y + h * np.sum(A[i,:i,None] * k[:i], axis=0)
-        k[i] = f(t + h*np.sum(A[i,:]), yi, *args)
-    return y + h * np.sum(b[:,None] * k, axis=0)
+    du_u = @view du[1:N]
+    du_v = @view du[N+1:2N]
 
-def esrk_step_adaptive(f, y, t, h, A, b_hi, b_lo, args):
-    k = np.zeros((S, len(y)))
-    for i in range(S):
-        yi = y + h * np.sum(A[i,:i,None] * k[:i], axis=0)
-        k[i] = f(t + h*np.sum(A[i,:]), yi, *args)
+    uxx = lap(u, dx)
 
-    y_hi = y + h*np.sum(b_hi[:,None] * k, axis=0)
-    y_lo = y + h*np.sum(b_lo[:,None] * k, axis=0)
-    err  = norm(y_hi - y_lo) / np.sqrt(len(y))
-    return y_hi, err
+    du_u .= Du .* uxx .+ u .* (u .- a) .* (1 .- u) .- v
+    du_v .= eps .* (u .- γ .* v)
+end
 
-def esrk_integrate(f, y0, t0, t1, h, A, b, args):
-    t, y = t0, y0.copy()
-    while t < t1:
-        if t + h > t1:
-            h = t1 - t
-        y = esrk_step(f, y, t, h, A, b, args)
-        t += h
-    return y
-
-def adaptive_esrk(f, y0, t0, t1, h0, A, b_hi, b_lo, tol, args):
-    t, y, h = t0, y0.copy(), h0
-    safety, kP, kI = 0.9, 0.2, 0.08
-    steps = rejects = 0
-    prev_err = tol
-    h_hist = []
-
-    while t < t1:
-        if t + h > t1:
-            h = t1 - t
-
-        y_new, err = esrk_step_adaptive(f, y, t, h, A, b_hi, b_lo, args)
-
-        if err <= tol or np.isnan(err):
-            y = y_new
-            t += h
-            h_hist.append(h)
-        else:
-            rejects += 1
-
-        fac = (tol/(err+1e-14))**kP * (tol/(prev_err+1e-14))**kI
-        h = float(np.clip(h * safety * fac, 0.2*h, 4.0*h))
-        prev_err = err
-        steps += 1
-
-        if steps > 20000:
-            break
-
-    return y, np.array(h_hist), steps, rejects
-
-def compute_reference(f, y0, t0, t1, A, b4, args):
-    """Very fine fixed step for reference."""
-    h_ref = 5e-5
-    return esrk_integrate(f, y0, t0, t1, h_ref, A, b4, args)
-
-# ============================================================
-# Main Script
-# ============================================================
-print("\nFitzHugh–Nagumo PDE — ESRK(16,4/3) Full Diagnostics\n")
-
-# Grid - less stiff
+# ------------------------------------------------------------
+# Problem setup
+# ------------------------------------------------------------
 N = 200
 L = 1.0
-x = np.linspace(0, L, N)
-dx = L / N
+x = LinRange(0, L, N)
+dx = L/N
 
-# PDE parameters
-Du = 0.005
-eps = 0.05
-gamma = 2.0
-a = 0.1
+Du   = 0.005
+eps  = 0.05
+γ    = 2.0
+a    = 0.1
+params = (N, dx, Du, eps, γ, a)
 
-# Initial condition
-u0 = 0.5*(1 + np.tanh((0.5-x)*10))
-v0 = np.zeros_like(x)
-y0 = np.concatenate([u0, v0])
+u0 = 0.5 .* (1 .+ tanh.(10 .* (0.5 .- x)))
+v0 = zeros(N)
+y0 = vcat(u0, v0)
 
 t0, t1 = 0.0, 0.1
 
-# ------------------------------------------------------------
-# Reference
-# ------------------------------------------------------------
-print("Computing reference solution (fixed h=5e-5)…")
-y_ref = compute_reference(
-    fhn_rhs, y0, t0, t1, A, b4,
-    (Du, eps, gamma, a, dx)
-)
-print(f"Reference computed. Max |u|={np.max(np.abs(y_ref[:N])):.3f}")
+# ============================================================
+# Reference solution (very fine dt)
+# ============================================================
+println("Computing reference solution using ROCK4 dt=5e-5 ...")
+prob_ref = ODEProblem(fhn!, y0, (t0, t1), params)
 
-# ------------------------------------------------------------
-# FOURTH-ORDER METHOD
-# ------------------------------------------------------------
-print("\n=== ESRK(16,4) Fourth-Order Method Convergence ===")
-h_list = np.array([0.02, 0.01, 0.005, 0.0025, 0.00125, 0.000625])
-errors4 = []
+sol_ref = solve(prob_ref, ROCK4();
+                dt = 5e-5,
+                adaptive = false,
+                maxiters = 1e10)
 
-for h in h_list:
-    y = esrk_integrate(fhn_rhs, y0, t0, t1, h, A, b4,
-                       (Du, eps, gamma, a, dx))
-    if np.any(np.isnan(y)):
-        print(f"h={h:9.6f}  [UNSTABLE - skipped]")
+y_ref = sol_ref(t1)
+println("Reference max|u| = ", maximum(abs.(y_ref[1:N])))
+
+# ============================================================
+# FIXED-STEP ROCK4 CONVERGENCE
+# ============================================================
+println("\n=== ROCK4 Fixed-Step Convergence ===")
+
+h_list = [0.02, 0.01, 0.005, 0.0025, 0.00125, 0.000625]
+errs = Float64[]
+
+for h in h_list
+    prob = ODEProblem(fhn!, y0, (t0, t1), params)
+    sol = solve(prob, ROCK4();
+                dt=h, adaptive=false, maxiters=1e10)
+
+    y = sol(t1)
+
+    if any(isnan.(y))
+        @printf("dt=%8.5f  [UNSTABLE]\n", h)
         continue
-    e = norm(y - y_ref) / np.sqrt(len(y))
-    errors4.append(e)
-    print(f"h={h:9.6f}  RMS={e:.3e}")
+    end
 
-if len(errors4) > 1:
-    orders4 = [np.log(errors4[i]/errors4[i+1]) /
-               np.log(h_list[i]/h_list[i+1])
-               for i in range(len(errors4)-1)]
-    mean_order4 = np.mean(orders4)
-else:
-    mean_order4 = np.nan
+    e = norm(y - y_ref) / sqrt(length(y))
+    push!(errs, e)
+    @printf("dt=%8.5f  RMS=%10.3e\n", h, e)
+end
 
-print(f"Observed order (4th) ≈ {mean_order4:.3f}")
+if length(errs) >= 2
+    orders = [ log(errs[i]/errs[i+1]) /
+               log(h_list[i]/h_list[i+1])
+               for i in 1:length(errs)-1 ]
+    @printf("Observed order ≈ %.6f\n", mean(orders))
+end
 
-# ------------------------------------------------------------
-# THIRD-ORDER METHOD
-# ------------------------------------------------------------
-print("\n=== ESRK(16,3) Third-Order Embedded Method Convergence ===")
-errors3 = []
-h_list_3 = []
+# ============================================================
+# ADAPTIVE ROCK4 (like ESRK Python)
+# ============================================================
+println("\n=== Adaptive ROCK4 ===")
 
-for h in h_list:
-    y = esrk_integrate(fhn_rhs, y0, t0, t1, h, A, b3,
-                       (Du, eps, gamma, a, dx))
-    if np.any(np.isnan(y)):
-        print(f"h={h:9.6f}  [UNSTABLE - skipped]")
-        continue
-    e = norm(y - y_ref) / np.sqrt(len(y))
-    errors3.append(e)
-    h_list_3.append(h)
-    print(f"h={h:9.6f}  RMS={e:.3e}")
+tols = 10.0 .^ range(-2, -5, length=6)
 
-if len(errors3) > 1:
-    orders3 = [np.log(errors3[i]/errors3[i+1]) /
-               np.log(h_list_3[i]/h_list_3[i+1])
-               for i in range(len(errors3)-1)]
-    mean_order3 = np.mean(orders3)
-else:
-    mean_order3 = np.nan
+# FLOP model (same as Python ESRK)
+F_RHS = 20N     # FLOPs per RHS evaluation
+# FLOPs = fevals * F_RHS
 
-print(f"Observed order (3rd) ≈ {mean_order3:.3f}")
+for tol in tols
+    prob = ODEProblem(fhn!, y0, (t0, t1), params)
 
-# ------------------------------------------------------------
-# ADAPTIVE ESRK + FLOPs
-# ------------------------------------------------------------
-print("\n=== Adaptive ESRK(16,4/3) ===")
+    sol = solve(prob, ROCK4();
+                reltol=tol, abstol=tol,
+                maxiters=1e10)
 
-tols = np.logspace(-2, -5, 6)
+    y = sol(t1)
+    err = norm(y - y_ref) / sqrt(length(y))
 
-# FLOP model A
-F_RHS = 20 * N         # FLOPs per RHS evaluation
-F_per_step = S * F_RHS # 16 stages × RHS FLOPs
+    # Older DifferentialEquations.jl uses these fields:
+    steps   = sol.destats.naccept    # number of accepted steps
+    rejects = sol.destats.nreject    # rejected steps
+    fevals  = sol.destats.nf         # RHS evaluations
 
-for tol in tols:
-    y, h_hist, steps, rej = adaptive_esrk(
-        fhn_rhs, y0, t0, t1,
-        h0=0.001,
-        A=A, b_hi=b4, b_lo=b3,
-        tol=tol,
-        args=(Du, eps, gamma, a, dx)
-    )
+    hs = diff(sol.t)
+    mean_h = mean(hs)
 
-    err = norm(y - y_ref) / np.sqrt(len(y))
-    mean_h = np.mean(h_hist) if len(h_hist) > 0 else np.nan
+    FLOPs = fevals * F_RHS
 
-    # FLOP count
-    FLOPs_total = steps * F_per_step
+    @printf("tol=%7.1e  steps=%6d  rej=%3d  err=%10.3e  mean(h)=%8.3e  FLOPs≈%.2e\n",
+            tol, steps, rejects, err, mean_h, FLOPs)
+end
 
-    print(f"tol={tol:7.1e}  steps={steps:5d}  rej={rej:3d}  "
-          f"err={err:.3e}  mean(h)={mean_h:.3e}  FLOPs≈{FLOPs_total:.2e}")
-
-# ------------------------------------------------------------
-# DONE
-# ------------------------------------------------------------
-print("\nREADY.\n")
-plt.show()
+println("\nREADY.\n")
